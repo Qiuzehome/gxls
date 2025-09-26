@@ -4,6 +4,8 @@ import argparse
 import logging
 
 # ===== 默认配置参数 =====
+# 接口地址
+API_URL = "http://testing-novabid-dsp.testing.svc.gzk8s.zhizh.com/api/admin/script/export/filter"
 
 # 调度器默认配置
 DEFAULT_SCHEDULE_TIME = "07:00"
@@ -11,13 +13,13 @@ DEFAULT_SCHEDULE_TIME = "07:00"
 # Google Sheets默认配置
 DEFAULT_CREDENTIALS_PATH = "credentials.json"
 DEFAULT_SHEET_NAME = "TSTASK"
-DEFAULT_WORKSHEET_NAME = "p0"
+DEFAULT_WORKSHEET_NAME = "00"
 
 # 表单检查默认配置
 DEFAULT_MAX_URLS = None
 DEFAULT_MIN_RESULTS = 10
 DEFAULT_BATCH_SIZE = 50
-DEFAULT_MAX_BATCHES = 10
+DEFAULT_MAX_BATCHES = 5
 DEFAULT_TIMEOUT = 15000
 DEFAULT_HEADLESS = True
 DEFAULT_REALTIME_WRITE = True

@@ -5,9 +5,71 @@ import asyncio
 from google_sheets import write_google_sheets
 from form_checker import load_url
 from config import URL_GROUPS
+from robot import Robot
+from config import API_URL
 
-
+robot = Robot()
 DEFAULT_CACHE_DATE_LEN = 4  # 查询n天前至今的数据（默认1天）
+
+# 全局统计收集器
+WORKSHEET_STATS = {}
+
+
+def send_summary_report():
+    """发送工作表汇总报告"""
+    if not WORKSHEET_STATS:
+        robot.send_text("📊 任务执行完成，但没有统计数据")
+        return
+
+    # 构建汇总报告
+    current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    report_lines = [
+        f"📊 任务执行汇总报告",
+        f"🕐 完成时间: {current_time}",
+        f"━━━━━━━━━━━━━━━━━━━━━━━━",
+    ]
+
+    total_target = 0
+    total_actual = 0
+
+    # 按照执行顺序显示统计
+    sequence = ["p0", "00", "p1"]
+    for ws_name in sequence:
+        if ws_name in WORKSHEET_STATS:
+            stats = WORKSHEET_STATS[ws_name]
+            total_target += stats["target_results"]
+            total_actual += stats["actual_results"]
+
+            report_lines.append(f"📋 工作表 {ws_name}:")
+            report_lines.append(
+                f"   目标: {stats['target_results']} | 实际: {stats['actual_results']}"
+            )
+            report_lines.append(
+                f"   完成度: {stats['completion_rate']}% | {stats['status']}"
+            )
+            report_lines.append(f"   批次数: {stats['total_batches']}")
+            report_lines.append("")
+
+    # 总体统计
+    overall_rate = (
+        round((total_actual / total_target) * 100, 1) if total_target > 0 else 0
+    )
+    report_lines.extend(
+        [
+            f"📈 总体统计:",
+            f"   总目标: {total_target} | 总实际: {total_actual}",
+            f"   总完成度: {overall_rate}%",
+            f"━━━━━━━━━━━━━━━━━━━━━━━━",
+            f"✅ 所有工作表处理完成，请查看Google Sheets",
+        ]
+    )
+
+    # 发送报告
+    report_text = "\n".join(report_lines)
+    robot.send_text(report_text)
+
+    # 清空统计数据，为下次运行做准备
+    WORKSHEET_STATS.clear()
 
 
 def parse_data(urls_data):
@@ -133,6 +195,28 @@ def fetch_urls_batch(api_url, batch_size=50, skip=0, config=None):
         res_data = response.json()
     except ValueError:
         return []
+    # 追加写入到res_data.json文件
+    try:
+        # 尝试读取现有数据
+        with open("res_data.json", "r", encoding="utf-8") as f:
+            existing_data = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        # 如果文件不存在或格式错误，创建空列表
+        existing_data = []
+
+    # 确保existing_data是列表
+    if not isinstance(existing_data, list):
+        existing_data = []
+
+    # 将新数据追加到现有数据
+    if isinstance(res_data, list):
+        existing_data.extend(res_data)
+    else:
+        existing_data.append(res_data)
+
+    # 写回文件
+    with open("res_data.json", "w", encoding="utf-8") as f:
+        f.write(json.dumps(existing_data, ensure_ascii=False, indent=4))
     res = [
         {"href": x.get("href"), "param": x.get("param")}
         for x in res_data
@@ -156,7 +240,7 @@ def get_url(api_url, config=None):
         "min_results", config.min_results
     )
     batch_size = config.batch_size if config else 50
-    max_batches = config.max_batches if config else 10
+    max_batches = config.max_batches if config else 5
     max_urls = config.max_urls if config else None
 
     print(f"目标：获取至少 {min_results} 个有效结果")
@@ -325,12 +409,32 @@ def get_url(api_url, config=None):
         else:
             print("⚠️  没有找到任何有效结果")
 
+    # 收集当前工作表的统计信息
+    if config and hasattr(config, "worksheet_name"):
+        current_ws = config.worksheet_name
+        WORKSHEET_STATS[current_ws] = {
+            "worksheet_name": current_ws,
+            "target_results": min_results,
+            "actual_results": len(all_valid_results),
+            "total_batches": current_batch,
+            "completion_rate": (
+                round((len(all_valid_results) / min_results) * 100, 1)
+                if min_results > 0
+                else 0
+            ),
+            "status": (
+                "✅ 完成" if len(all_valid_results) >= min_results else "⚠️ 未达标"
+            ),
+        }
+
     # 按顺序依次执行 [p0, p1, 00]
     if config:
-        sequence = ["p0", "00", "p1"]
+        sequence = ["00", "p0", "p1"]
         current_ws = getattr(config, "worksheet_name", None)
         if current_ws in sequence:
-            if current_ws == "00":
+            if current_ws == "p1":
+                # 最后一个工作表完成，发送汇总报告
+                send_summary_report()
                 return all_valid_results
             # 切换到下一个 worksheet
             next_index = sequence.index(current_ws) + 1
@@ -343,9 +447,10 @@ def get_url(api_url, config=None):
                 "min_results", config.min_results
             )
             # 从 run_daily_task 继续执行下一项（延迟导入以避免循环引用）
-            from scheduler import run_daily_task
+            # from scheduler import run_daily_task
 
-            run_daily_task(config)
+            # run_daily_task(config)
+            get_url(API_URL, config)
         else:
             # 未识别的 worksheet，直接结束
             return all_valid_results
