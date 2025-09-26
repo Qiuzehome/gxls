@@ -2,3 +2,9 @@ __pycache__
 venv
 .vscode
 *.log
+
+# 敏感文件
+credentials.json
+**/credentials.json
+# 数据文件
+log/
