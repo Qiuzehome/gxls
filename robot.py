@@ -1,5 +1,6 @@
 import requests
 import json
+from config import DEFAULT_ROBOT
 
 
 class Robot:
@@ -24,26 +25,27 @@ class Robot:
 
     def _send_request(self, data):
         """发送请求到企业微信机器人"""
-        try:
-            response = requests.post(
-                self.url, headers=self.headers, data=json.dumps(data), timeout=10
-            )
-            response.raise_for_status()
-            result = response.json()
+        if DEFAULT_ROBOT:
+            try:
+                response = requests.post(
+                    self.url, headers=self.headers, data=json.dumps(data), timeout=10
+                )
+                response.raise_for_status()
+                result = response.json()
 
-            if result.get("errcode") == 0:
-                print("✅ 消息发送成功")
-                return True
-            else:
-                print(f"❌ 消息发送失败: {result}")
+                if result.get("errcode") == 0:
+                    print("✅ 消息发送成功")
+                    return True
+                else:
+                    print(f"❌ 消息发送失败: {result}")
+                    return False
+
+            except requests.exceptions.RequestException as e:
+                print(f"❌ 网络请求失败: {e}")
                 return False
-
-        except requests.exceptions.RequestException as e:
-            print(f"❌ 网络请求失败: {e}")
-            return False
-        except json.JSONDecodeError as e:
-            print(f"❌ JSON解析失败: {e}")
-            return False
-        except Exception as e:
-            print(f"❌ 发送消息时出现错误: {e}")
-            return False
+            except json.JSONDecodeError as e:
+                print(f"❌ JSON解析失败: {e}")
+                return False
+            except Exception as e:
+                print(f"❌ 发送消息时出现错误: {e}")
+                return False

@@ -4,12 +4,10 @@ import requests
 import asyncio
 from google_sheets import write_google_sheets
 from form_checker import load_url
-from config import URL_GROUPS
+from config import URL_GROUPS, DEFAULT_CACHE_DATE_LEN, API_URL
 from robot import Robot
-from config import API_URL
 
 robot = Robot()
-DEFAULT_CACHE_DATE_LEN = 4  # 查询n天前至今的数据（默认1天）
 
 # 全局统计收集器
 WORKSHEET_STATS = {}
@@ -176,7 +174,7 @@ def fetch_urls_batch(api_url, batch_size=50, skip=0, config=None):
     except ValueError:
         return []
     # 追加写入到res_data.json文件
-    file_name = f"res_data_{config.worksheet_name}.json"
+    file_name = f"log/res_data_{config.worksheet_name}_{datetime.datetime.now().strftime('%Y%m%d')}.json"
     try:
         # 尝试读取现有数据
         with open(file_name, "r", encoding="utf-8") as f:
@@ -408,10 +406,7 @@ def get_url(api_url, config=None):
             config.min_results = URL_GROUPS.get(next_ws, {}).get(
                 "min_results", config.min_results
             )
-            # 从 run_daily_task 继续执行下一项（延迟导入以避免循环引用）
-            # from scheduler import run_daily_task
-
-            # run_daily_task(config)
+            # 递归调用处理下一个工作表
             get_url(API_URL, config)
         else:
             # 未识别的 worksheet，直接结束

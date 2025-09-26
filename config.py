@@ -8,7 +8,11 @@ import logging
 API_URL = "http://testing-novabid-dsp.testing.svc.gzk8s.zhizh.com/api/admin/script/export/filter"
 
 # 调度器默认配置
-DEFAULT_SCHEDULE_TIME = "07:00"
+DEFAULT_SCHEDULE_TIME = "08:00"
+# 查询n天前至今的数据（默认2天）
+DEFAULT_CACHE_DATE_LEN = 2
+
+DEFAULT_ROBOT = True
 
 # Google Sheets默认配置
 DEFAULT_CREDENTIALS_PATH = "credentials.json"
@@ -27,21 +31,21 @@ DEFAULT_WRITE_RETRY = 2
 
 # 日志默认配置
 DEFAULT_LOG_LEVEL = "INFO"
-DEFAULT_LOG_FILE = "app.log"
+DEFAULT_LOG_FILE = "log/app.log"
 
 # URL映射表
 URL_GROUPS = {
     "p0": {
         "urls": "edge.sassostyle.com,bj1.szgame1.lol/?portal=1964,bj17.puzzgo41.lol/?portal=1909,bj18.puzzgo41.lol/?portal=1910,bj2.puzzgo41.lol/?portal=1848,ate.dayheadlines.com,believe.puzzlegamey.com,ent.dayheadlines.com,hall.puzzlegamey.com,puzzle.pbfhp.com,nova.puzzlegamey.com,flynix.top,buzz.dayheadlines.com,date.dayheadlines.com,mdfp.ventoroa.com,pure.sassostyle.com,fancy.puzzlegamey.com,top.vwbvapxxx9l.com,trend.sassostyle.com,dave.puzzlegamey.com,glow.joysfull.com,go.pbfhp.com,hiap.ventoroa.com,voice.karationews.com,cosa.ventoroa.com,book.karationews.com,bj2.puzzgo12.lol/?portal=1804,hear.karationews.com,wine.karationews.com",
-        "min_results": 180,
+        "min_results": 90,
     },
     "p1": {
         "urls": "bj3.puzzgo12.lol/?portal=1978,bj5.puzzgo12.lol/?portal=1980,dazzle.joysfull.com,fast.kwbvapxxx7w.com,hyntra.top,match.pbfhp.com,serene.joysfull.com,snap.kwbvapxxx7w.com,blue.weixiangltd.net,pfht.miranovaq.com,pink.wiuir.top,sdef.miranovaq.com,wen.realtimesinfo.com,white.fkiuz.top,goplay.pbfhp.co,strategy.pbfhp.com,light.dayheadlines.com,spot.dayheadlines.com,well.gamepean.top,good.gamepean.top,win.pcllwoscoddl.com,zen.sassostyle.com,add.joysfull.com,go.pcllwoscoddl.com,link.bdasdvsdadsx8w.com,easy.bdasdvsdadsx8w.com,mellow.joysfull.com,dream.pcllwoscoddl.com,bit.vwbvapxxx9l.com",
-        "min_results": 120,
+        "min_results": 60,
     },
     "00": {
         "urls": "good.realtimesinfo.com,bj1.puzzgo41.lol/?portal=1777,office.puzzlegamey.com,little.puzzlegamey.com,bj6.puzzgo41.lol/?portal=1809",
-        "min_results": 180,
+        "min_results": 90,
     },
     "": {
         "urls": "bj18.puzzgo41.lol/?portal=1910,bj2.puzzgo41.lol/?portal=1848,blue.weixiangltd.net,pfht.miranovaq.com,pink.wiuir.top,sdef.miranovaq.com,wen.realtimesinfo.com,white.fkiuz.top,ate.dayheadlines.com,believe.puzzlegamey.com,ent.dayheadlines.com,goplay.pbfhp.co,hall.puzzlegamey.com,ppc.uvthe.com,push.uvthe.com,puzzle.pbfhp.com,strategy.pbfhp.com,bj15.puzzgo41.lol/?portal=1907,bj16.puzzgo41.lol/?portal=1908,nova.puzzlegamey.com,light.dayheadlines.com,spot.dayheadlines.com,flynix.top,buzz.dayheadlines.com",
