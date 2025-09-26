@@ -60,7 +60,7 @@ def send_summary_report():
             f"   总目标: {total_target} | 总实际: {total_actual}",
             f"   总完成度: {overall_rate}%",
             f"━━━━━━━━━━━━━━━━━━━━━━━━",
-            f"✅ 所有工作表处理完成，请查看Google Sheets",
+            f"✅ 所有工作表处理完成，请查看 https://docs.google.com/spreadsheets/d/1-WdCcC3JA2cyk6Q1gem7a2gkyDJ5RJM_esFJr724OPI/edit?gid=2015433169#gid=2015433169",
         ]
     )
 
