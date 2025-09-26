@@ -392,7 +392,7 @@ def get_url(api_url, config=None):
         sequence = ["00", "p0", "p1"]
         current_ws = getattr(config, "worksheet_name", None)
         if current_ws in sequence:
-            if current_ws == "p1":
+            if current_ws == "p0":
                 # 最后一个工作表完成，发送汇总报告
                 send_summary_report()
                 return all_valid_results
