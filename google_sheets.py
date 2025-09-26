@@ -2,7 +2,6 @@
 
 import gspread
 import logging
-import argparse
 
 # --- 配置日志 ---
 logging.basicConfig(
@@ -66,9 +65,9 @@ class GoogleSheetsManager:
 
     def append_data(self, worksheet, data):
         """
-        向工作表追加数据，不会覆盖现有数据。
+        向指定的工作表追加数据，自动去重（基于href字段）
         :param worksheet: gspread 的 Worksheet 对象
-        :param data: 一个二维列表，例如 [['张三', 30], ['李四', 25]]
+        :param data: 一个二维列表，例如 [['href1', 'param1', '2025-09-26', '', '']]
         """
         if not worksheet:
             logging.warning("Worksheet 对象无效，无法追加数据。")
@@ -81,10 +80,41 @@ class GoogleSheetsManager:
                 header = ["href", "param", "日期", "负责人", "状态"]
                 worksheet.append_row(header)
                 logging.info("添加表头到空工作表")
+                existing_hrefs = set()  # 空表，没有现有的href
+            else:
+                # 提取现有数据中的href列（假设href是第一列）
+                existing_hrefs = set()
+                for row in existing_data[1:]:  # 跳过表头
+                    if row and len(row) > 0:  # 确保行不为空且有数据
+                        existing_hrefs.add(row[0])  # 第一列是href
+                logging.info(f"工作表中已存在 {len(existing_hrefs)} 个href记录")
 
-            # 追加数据行
-            worksheet.append_rows(data)
-            logging.info(f"成功向 '{worksheet.title}' 追加 {len(data)} 行数据。")
+            # 过滤重复数据
+            new_data = []
+            duplicate_count = 0
+            for row in data:
+                if row and len(row) > 0:  # 确保行不为空且有数据
+                    href = row[0]  # 第一列是href
+                    if href not in existing_hrefs:
+                        new_data.append(row)
+                        existing_hrefs.add(href)  # 添加到已存在集合中，避免本批次内重复
+                    else:
+                        duplicate_count += 1
+
+            # 追加新数据
+            if new_data:
+                worksheet.append_rows(new_data)
+                logging.info(
+                    f"成功向 '{worksheet.title}' 追加 {len(new_data)} 行新数据"
+                )
+
+            if duplicate_count > 0:
+                logging.info(f"跳过 {duplicate_count} 行重复数据（href已存在）")
+
+            logging.info(
+                f"数据处理完成：新增 {len(new_data)} 行，跳过重复 {duplicate_count} 行"
+            )
+
         except Exception as e:
             logging.error(f"追加数据失败: {e}", exc_info=True)
 

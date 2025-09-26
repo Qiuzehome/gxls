@@ -4,7 +4,7 @@ import requests
 import asyncio
 from google_sheets import write_google_sheets
 from form_checker import load_url
-from config import URL_GROUPS, DEFAULT_CACHE_DATE_LEN, API_URL
+from config import URL_GROUPS, API_URL
 from robot import Robot
 
 robot = Robot()
@@ -88,8 +88,10 @@ def parse_data(urls_data):
             # 新格式：包含href和param的字典
             href = item.get("href", "")
             param = item.get("param", "")
+            # 截取param的第一部分（逗号分隔）
+            param_first = param.split(",")[0] if param else ""
             # 格式：[href, param, 日期, 负责人, 状态]
-            rows.append([href, param, today, "", ""])
+            rows.append([href, param_first, today, "", ""])
         else:
             # 未知格式，跳过
             print(f"⚠️ 跳过未知格式的数据: {item}")
@@ -153,22 +155,22 @@ def fetch_urls_batch(api_url, batch_size=50, skip=0, config=None):
     :return: URL列表
     """
     print(f"🔗 调用API: {api_url}")
-
+    end_date = f"{datetime.datetime.now().strftime('%Y-%m-%d')} 23:59:59"
+    print(f"结束日期: {end_date}")
     data = {
         "type": "json",
         "author": "admin",
-        "begin_date": f"{(datetime.datetime.now() - datetime.timedelta(days=DEFAULT_CACHE_DATE_LEN)).strftime('%Y-%m-%d')} 00:00:00",
+        "begin_date": f"{(datetime.datetime.now() - datetime.timedelta(days=config.cache_date_len)).strftime('%Y-%m-%d')} 00:00:00",
         "end_date": f"{datetime.datetime.now().strftime('%Y-%m-%d')} 23:59:59",
         "top_n": batch_size,
         "meet_template": 1,
         "meet_fz": 1,
-        "repeat_sent": 1,
+        "repeat_sent": 0,
         "filter_collect": 1,
         "urls": config.req_urls,
     }
 
     response = requests.post(api_url, json=data)
-    print("响应结果:", response)
     try:
         res_data = response.json()
     except ValueError:
@@ -197,13 +199,14 @@ def fetch_urls_batch(api_url, batch_size=50, skip=0, config=None):
     with open(file_name, "w", encoding="utf-8") as f:
         f.write(json.dumps(existing_data, ensure_ascii=False, indent=4))
     res = [
-        {"href": x.get("href"), "param": x.get("param")}
+        {
+            "href": x.get("href"),
+            "param": x.get("param", "").split(",")[0] if x.get("param") else "",
+        }
         for x in res_data
         if isinstance(x, dict) and x.get("href")
     ]
-    # urls = [x.get("href") for x in res_data if isinstance(x, dict) and x.get("href")]
     print(f"批次 {skip//batch_size + 1}: 获取到 {len(res)} 个URL")
-    # urls = ["https://acehandymanfranchising.com/getting-started/"]
     return res
 
 
@@ -392,7 +395,7 @@ def get_url(api_url, config=None):
         sequence = ["00", "p0", "p1"]
         current_ws = getattr(config, "worksheet_name", None)
         if current_ws in sequence:
-            if current_ws == "p0":
+            if current_ws == "p1":
                 # 最后一个工作表完成，发送汇总报告
                 send_summary_report()
                 return all_valid_results
