@@ -165,7 +165,7 @@ def fetch_urls_batch(api_url, batch_size=50, skip=0, config=None):
         "top_n": batch_size,
         "meet_template": 1,
         "meet_fz": 1,
-        "repeat_sent": 0,
+        "repeat_sent": 1,
         "filter_collect": 1,
         "urls": config.req_urls,
     }
@@ -390,12 +390,22 @@ def get_url(api_url, config=None):
             ),
         }
 
-    # 按顺序依次执行 [p0, p1, 00]
+    # 检查是否是手动指定的单个工作表执行
+    if (
+        config
+        and hasattr(config, "run_single_worksheet")
+        and config.run_single_worksheet
+    ):
+        # 手动指定单个工作表，直接结束，不进行序列处理
+        print(f"✅ 手动执行工作表 '{config.worksheet_name}' 完成")
+        return all_valid_results
+
+    # 按顺序依次执行 [00, p0, p1]
     if config:
         sequence = ["00", "p0", "p1"]
         current_ws = getattr(config, "worksheet_name", None)
         if current_ws in sequence:
-            if current_ws == "p1":
+            if current_ws == sequence[-1]:
                 # 最后一个工作表完成，发送汇总报告
                 send_summary_report()
                 return all_valid_results

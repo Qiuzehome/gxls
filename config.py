@@ -202,6 +202,12 @@ class Config:
         self.worksheet_name = args.worksheet_name
         self.req_urls = URL_GROUPS.get(args.worksheet_name, {}).get("urls", "")
 
+        # 检查是否是手动指定的工作表
+        # 如果用户没有指定worksheet-name参数，使用默认值，否则认为是手动指定
+        self.run_single_worksheet = (
+            hasattr(args, "worksheet_name") and args.worksheet_name
+        )
+
         # 表单检查配置
         self.max_urls = args.max_urls
         self.min_results = args.min_results
