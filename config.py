@@ -36,15 +36,15 @@ DEFAULT_LOG_FILE = "log/app.log"
 URL_GROUPS = {
     "00": {
         "urls": "good.realtimesinfo.com,bj1.puzzgo41.lol/?portal=1777,office.puzzlegamey.com,little.puzzlegamey.com,bj6.puzzgo41.lol/?portal=1809",
-        "min_results": 90,
+        "min_results": 180,
     },
     "p0": {
         "urls": "edge.sassostyle.com,bj1.szgame1.lol/?portal=1964,bj17.puzzgo41.lol/?portal=1909,bj18.puzzgo41.lol/?portal=1910,bj2.puzzgo41.lol/?portal=1848,ate.dayheadlines.com,believe.puzzlegamey.com,ent.dayheadlines.com,hall.puzzlegamey.com,puzzle.pbfhp.com,nova.puzzlegamey.com,flynix.top,buzz.dayheadlines.com,date.dayheadlines.com,mdfp.ventoroa.com,pure.sassostyle.com,fancy.puzzlegamey.com,top.vwbvapxxx9l.com,trend.sassostyle.com,dave.puzzlegamey.com,glow.joysfull.com,go.pbfhp.com,hiap.ventoroa.com,voice.karationews.com,cosa.ventoroa.com,book.karationews.com,bj2.puzzgo12.lol/?portal=1804,hear.karationews.com,wine.karationews.com",
-        "min_results": 90,
+        "min_results": 180,
     },
     "p1": {
         "urls": "bj3.puzzgo12.lol/?portal=1978,bj5.puzzgo12.lol/?portal=1980,dazzle.joysfull.com,fast.kwbvapxxx7w.com,hyntra.top,match.pbfhp.com,serene.joysfull.com,snap.kwbvapxxx7w.com,blue.weixiangltd.net,pfht.miranovaq.com,pink.wiuir.top,sdef.miranovaq.com,wen.realtimesinfo.com,white.fkiuz.top,goplay.pbfhp.co,strategy.pbfhp.com,light.dayheadlines.com,spot.dayheadlines.com,well.gamepean.top,good.gamepean.top,win.pcllwoscoddl.com,zen.sassostyle.com,add.joysfull.com,go.pcllwoscoddl.com,link.bdasdvsdadsx8w.com,easy.bdasdvsdadsx8w.com,mellow.joysfull.com,dream.pcllwoscoddl.com,bit.vwbvapxxx9l.com",
-        "min_results": 60,
+        "min_results": 120,
     },
 }
 
