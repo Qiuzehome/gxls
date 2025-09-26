@@ -141,26 +141,6 @@ def write_batch_to_sheets_with_retry(batch_results, batch_id, config, max_retrie
                 print(
                     f"❌ 第 {batch_id} 批次写入Google Sheets失败，已重试 {max_retries} 次: {str(e)}"
                 )
-
-                # 保存到本地作为备份
-                backup_filename = f"backup_batch_{batch_id}_{config.worksheet_name}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-                try:
-                    with open(backup_filename, "w", encoding="utf-8") as f:
-                        f.write(f"# 批次 {batch_id} 备份 - {datetime.datetime.now()}\n")
-                        f.write(f"# 工作表: {config.worksheet_name}\n")
-                        f.write(f"# 结果数量: {len(batch_results)}\n")
-                        f.write("# URL和参数列表 (URL | PARAM):\n")
-                        for item in batch_results:
-                            if isinstance(item, dict):
-                                href = item.get("href", "")
-                                param = item.get("param", "")
-                                f.write(f"{href} | {param}\n")
-                            else:
-                                f.write(f"{item} | \n")
-                    print(f"💾 已保存到本地备份文件: {backup_filename}")
-                except Exception as backup_e:
-                    print(f"❌ 本地备份也失败: {str(backup_e)}")
-
                 return False
 
     return False
@@ -196,9 +176,10 @@ def fetch_urls_batch(api_url, batch_size=50, skip=0, config=None):
     except ValueError:
         return []
     # 追加写入到res_data.json文件
+    file_name = f"res_data_{config.worksheet_name}.json"
     try:
         # 尝试读取现有数据
-        with open("res_data.json", "r", encoding="utf-8") as f:
+        with open(file_name, "r", encoding="utf-8") as f:
             existing_data = json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         # 如果文件不存在或格式错误，创建空列表
@@ -215,7 +196,7 @@ def fetch_urls_batch(api_url, batch_size=50, skip=0, config=None):
         existing_data.append(res_data)
 
     # 写回文件
-    with open("res_data.json", "w", encoding="utf-8") as f:
+    with open(file_name, "w", encoding="utf-8") as f:
         f.write(json.dumps(existing_data, ensure_ascii=False, indent=4))
     res = [
         {"href": x.get("href"), "param": x.get("param")}
@@ -386,26 +367,7 @@ def get_url(api_url, config=None):
                 print(f"✅ 所有 {len(all_valid_results)} 个结果已成功写入Google Sheets")
             except Exception as e:
                 print(f"❌ 批量写入Google Sheets失败: {str(e)}")
-                # 保存到本地备份
-                backup_filename = f"backup_final_{config.worksheet_name if config else 'unknown'}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
-                try:
-                    with open(backup_filename, "w", encoding="utf-8") as f:
-                        f.write(f"# 最终结果备份 - {datetime.datetime.now()}\n")
-                        f.write(
-                            f"# 工作表: {config.worksheet_name if config else 'unknown'}\n"
-                        )
-                        f.write(f"# 结果数量: {len(all_valid_results)}\n")
-                        f.write("# URL和参数列表 (URL | PARAM):\n")
-                        for item in all_valid_results:
-                            if isinstance(item, dict):
-                                href = item.get("href", "")
-                                param = item.get("param", "")
-                                f.write(f"{href} | {param}\n")
-                            else:
-                                f.write(f"{item} | \n")
-                    print(f"💾 已保存到本地备份文件: {backup_filename}")
-                except Exception as backup_e:
-                    print(f"❌ 本地备份也失败: {str(backup_e)}")
+
         else:
             print("⚠️  没有找到任何有效结果")
 
