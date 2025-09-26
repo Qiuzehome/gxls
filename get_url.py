@@ -290,14 +290,10 @@ def get_url(api_url, config=None):
 
         # 实时写入本批次的结果到Google Sheets（如果启用）
         write_success = True  # 默认成功，如果没有启用实时写入
-        if config and config.realtime_write:
-            write_success = write_batch_to_sheets_with_retry(
-                batch_results_with_data, current_batch, config, config.write_retry
-            )
-        elif batch_results_with_data:
-            print(
-                f"📋 第 {current_batch} 批次找到 {len(batch_results_with_data)} 个结果（实时写入已禁用）"
-            )
+
+        write_success = write_batch_to_sheets_with_retry(
+            batch_results_with_data, current_batch, config, config.write_retry
+        )
 
         # 添加到总结果中（用于统计）
         all_valid_results.extend(batch_results_with_data)
@@ -308,13 +304,10 @@ def get_url(api_url, config=None):
         print(f"  - 累计有效结果: {len(all_valid_results)}")
         print(f"  - 目标进度: {len(all_valid_results)}/{min_results}")
 
-        if config and config.realtime_write:
-            if batch_results and write_success:
-                print(f"  - ✅ 本批次结果已实时写入Google Sheets")
-            elif batch_results and not write_success:
-                print(f"  - ❌ 本批次结果写入Google Sheets失败，已保存本地备份")
-        elif batch_results:
-            print(f"  - 📋 本批次结果已缓存，将在最后统一写入")
+        if batch_results and write_success:
+            print(f"  - ✅ 本批次结果已实时写入Google Sheets")
+        elif batch_results and not write_success:
+            print(f"  - ❌ 本批次结果写入Google Sheets失败，已保存本地备份")
 
         # 如果已达到目标，提前结束
         if len(all_valid_results) >= min_results:
@@ -343,34 +336,10 @@ def get_url(api_url, config=None):
         f"  - 目标完成度: {len(all_valid_results)}/{min_results} ({len(all_valid_results)/min_results*100:.1f}%)"
     )
 
-    # 根据配置决定是否需要最终写入
-    if config and config.realtime_write:
-        # 实时写入模式：结果已经在每批次完成后写入
-        if all_valid_results:
-            print(f"✅ 所有 {len(all_valid_results)} 个结果已实时写入Google Sheets")
-        else:
-            print("⚠️  没有找到任何有效结果")
+    if all_valid_results:
+        print(f"✅ 所有 {len(all_valid_results)} 个结果已实时写入Google Sheets")
     else:
-        # 批量写入模式：在最后统一写入所有结果
-        if all_valid_results:
-            print(f"📝 开始写入所有 {len(all_valid_results)} 个结果到Google Sheets...")
-            try:
-                if config:
-                    sheets_config = config.get_sheets_config()
-                    write_google_sheets(
-                        parse_data(all_valid_results),
-                        sheets_config["credentials_path"],
-                        sheets_config["sheet_name"],
-                        sheets_config["worksheet_name"],
-                    )
-                else:
-                    write_google_sheets(parse_data(all_valid_results))
-                print(f"✅ 所有 {len(all_valid_results)} 个结果已成功写入Google Sheets")
-            except Exception as e:
-                print(f"❌ 批量写入Google Sheets失败: {str(e)}")
-
-        else:
-            print("⚠️  没有找到任何有效结果")
+        print("⚠️  没有找到任何有效结果")
 
     # 收集当前工作表的统计信息
     if config and hasattr(config, "worksheet_name"):

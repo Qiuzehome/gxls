@@ -26,7 +26,6 @@ DEFAULT_BATCH_SIZE = 50
 DEFAULT_MAX_BATCHES = 5
 DEFAULT_TIMEOUT = 15000
 DEFAULT_HEADLESS = True
-DEFAULT_REALTIME_WRITE = True
 DEFAULT_WRITE_RETRY = 2
 
 # 日志默认配置
@@ -64,9 +63,6 @@ def create_common_parser():
     )
     scheduler_group.add_argument(
         "--run-now", action="store_true", help="立即执行一次任务（测试用）"
-    )
-    scheduler_group.add_argument(
-        "--daemon", action="store_true", help="以守护进程模式运行"
     )
 
     # Google Sheets相关参数
@@ -134,12 +130,7 @@ def create_common_parser():
         default=DEFAULT_HEADLESS,
         help=f"使用无头浏览器模式（默认: {'启用' if DEFAULT_HEADLESS else '禁用'}）",
     )
-    checker_group.add_argument(
-        "--realtime-write",
-        action="store_true",
-        default=DEFAULT_REALTIME_WRITE,
-        help=f"实时写入Google Sheets，每批次完成后立即写入（默认: {'启用' if DEFAULT_REALTIME_WRITE else '禁用'}）",
-    )
+
     checker_group.add_argument(
         "--write-retry",
         type=int,
@@ -192,8 +183,6 @@ class Config:
         # 调度器配置
         self.schedule_time = args.time
         self.run_now = args.run_now
-        self.daemon_mode = args.daemon
-
         self.cache_date_len = args.cache_date_len
 
         # Google Sheets配置
@@ -215,7 +204,6 @@ class Config:
         self.max_batches = args.max_batches
         self.timeout = args.timeout
         self.headless = args.headless
-        self.realtime_write = args.realtime_write
         self.write_retry = args.write_retry
 
         # 日志配置
@@ -242,7 +230,6 @@ class Config:
             "max_batches": self.max_batches,
             "timeout": self.timeout,
             "headless": self.headless,
-            "realtime_write": self.realtime_write,
             "write_retry": self.write_retry,
         }
 

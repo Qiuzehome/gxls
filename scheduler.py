@@ -86,13 +86,5 @@ if __name__ == "__main__":
     else:
         # 设置定时任务
         setup_scheduler(config.schedule_time, config)
-
-        if config.daemon_mode:
-            logging.info("以守护进程模式运行")
-            logging.info("注意：真正的守护进程需要配合 systemd、nohup 或 screen 等工具")
-            logging.info(
-                f"建议使用: nohup python scheduler.py --time {config.schedule_time} &"
-            )
-
         # 运行调度器
         run_scheduler()
