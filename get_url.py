@@ -146,7 +146,7 @@ def write_batch_to_sheets_with_retry(batch_results, batch_id, config, max_retrie
     return False
 
 
-def fetch_urls_batch(api_url, batch_size=50, skip=0, config=None):
+def fetch_urls_batch(api_url, batch_size=100, skip=0, config=None):
     """
     获取一批URL
     :param api_url: API URL
@@ -165,8 +165,8 @@ def fetch_urls_batch(api_url, batch_size=50, skip=0, config=None):
         "top_n": batch_size,
         "meet_template": 1,
         "meet_fz": 1,
-        "repeat_sent": 1,
-        "filter_collect": 1,
+        "repeat_sent": 0,
+        "filter_collect": 0,
         "urls": config.req_urls,
     }
 
@@ -221,8 +221,8 @@ def get_url(api_url, config=None):
     min_results = URL_GROUPS.get(config.worksheet_name, {}).get(
         "min_results", config.min_results
     )
-    batch_size = config.batch_size if config else 50
-    max_batches = config.max_batches if config else 5
+    batch_size = config.batch_size if config else 100
+    max_batches = config.max_batches if config else 10
     max_urls = config.max_urls if config else None
 
     print(f"目标：获取至少 {min_results} 个有效结果")
@@ -360,14 +360,14 @@ def get_url(api_url, config=None):
         }
 
     # 检查是否是手动指定的单个工作表执行
-    if (
-        config
-        and hasattr(config, "run_single_worksheet")
-        and config.run_single_worksheet
-    ):
-        # 手动指定单个工作表，直接结束，不进行序列处理
-        print(f"✅ 手动执行工作表 '{config.worksheet_name}' 完成")
-        return all_valid_results
+    # if (
+    #     config
+    #     and hasattr(config, "run_single_worksheet")
+    #     and config.run_single_worksheet
+    # ):
+    #     # 手动指定单个工作表，直接结束，不进行序列处理
+    #     print(f"✅ 手动执行工作表 '{config.worksheet_name}' 完成")
+    #     return all_valid_results
 
     # 按顺序依次执行 [00, p0, p1]
     if config:
